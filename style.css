@@ -1,0 +1,238 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    max-width: 900px;
+    width: 100%;
+    margin-bottom: 40px; /* Space for download buttons when sticky */
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 2.2em;
+}
+
+/* Input Section */
+.input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+textarea {
+    width: calc(100% - 20px);
+    padding: 12px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1em;
+    min-height: 120px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.primary-btn {
+    background-color: #28a745; /* Green */
+    color: white;
+}
+
+.primary-btn:hover {
+    background-color: #218838;
+}
+
+.secondary-btn {
+    background-color: #6c757d; /* Gray */
+    color: white;
+}
+
+.secondary-btn:hover {
+    background-color: #5a6268;
+}
+
+.download-btn {
+    background-color: #007bff; /* Blue */
+    color: white;
+}
+
+.download-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Options Section */
+.options-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border: 1px solid #e9ecef;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.option-group label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.option-group select,
+.option-group input[type="range"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background-color: #fff;
+    font-size: 0.95em;
+    -webkit-appearance: none; /* Remove default styling for range */
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: grab;
+    margin-top: -5px; /* Adjust thumb vertical position */
+}
+
+input[type="range"]::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: grab;
+}
+
+input[type="range"] + span {
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto; /* Override default 100% width */
+    margin-right: 10px;
+    transform: scale(1.2); /* Make checkbox slightly larger */
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+/* Word Cloud Output */
+.word-cloud-output {
+    min-height: 300px;
+    border: 1px dashed #ced4da;
+    border-radius: 10px;
+    display: flex;
+    flex-wrap: wrap; /* Allows words to flow */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    padding: 20px;
+    background-color: #fff;
+    overflow: hidden; /* Hide overflowing parts if any */
+    transition: background-color 0.3s ease;
+}
+
+.word-cloud-output.active {
+    border-style: solid;
+}
+
+.word-cloud-output span {
+    display: inline-block; /* Essential for transforms and spacing */
+    white-space: nowrap; /* Prevent words from breaking */
+    margin: 5px 8px; /* Spacing between words */
+    cursor: default;
+    user-select: none;
+    transition: all 0.2s ease-out; /* Smooth transition for updates */
+    line-height: 1; /* Prevent extra space due to line-height */
+}
+
+.word-cloud-output span:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.placeholder-text {
+    font-style: italic;
+    color: #888;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+        margin: 15px;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+
+    .input-section {
+        flex-direction: column;
+    }
+
+    .options-section {
+        grid-template-columns: 1fr; /* Single column on small screens */
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}

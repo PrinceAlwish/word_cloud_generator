@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Cloud Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- html2canvas library for PNG download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Word Cloud Generator</h1>
+
+        <div class="input-section">
+            <textarea id="textInput" placeholder="Paste or type your text here..."></textarea>
+            <button id="generateBtn" class="btn primary-btn">Generate Word Cloud</button>
+        </div>
+
+        <div class="options-section">
+            <div class="option-group">
+                <label for="fontFamilySelect">Font Family:</label>
+                <select id="fontFamilySelect">
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+                    <option value="Times New Roman, serif">Times New Roman</option>
+                    <option value="Cursive">Cursive</option>
+                </select>
+            </div>
+
+            <div class="option-group">
+                <label for="minFontSize">Min Font Size:</label>
+                <input type="range" id="minFontSize" min="10" max="40" value="16">
+                <span id="minFontSizeValue">16px</span>
+            </div>
+
+            <div class="option-group">
+                <label for="maxFontSize">Max Font Size:</label>
+                <input type="range" id="maxFontSize" min="50" max="200" value="90">
+                <span id="maxFontSizeValue">90px</span>
+            </div>
+
+            <div class="option-group">
+                <label for="colorSchemeSelect">Color Scheme:</label>
+                <select id="colorSchemeSelect">
+                    <option value="default">Default (Blue-Green)</option>
+                    <option value="warm">Warm (Red-Orange)</option>
+                    <option value="cool">Cool (Purple-Blue)</option>
+                    <option value="grayscale">Grayscale</option>
+                    <option value="random">Random Bright</option>
+                </select>
+            </div>
+
+            <div class="option-group checkbox-group">
+                <input type="checkbox" id="excludeStopwords" checked>
+                <label for="excludeStopwords">Exclude Common Stopwords</label>
+            </div>
+
+            <div class="option-group checkbox-group">
+                <input type="checkbox" id="wordRotation">
+                <label for="wordRotation">Enable Word Rotation (Horizontal/Vertical)</label>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button id="refreshBtn" class="btn secondary-btn">Refresh Layout</button>
+            <button id="downloadPngBtn" class="btn download-btn">Download as PNG</button>
+            <button id="downloadSvgBtn" class="btn download-btn">Download as SVG</button>
+        </div>
+
+        <div id="wordCloudOutput" class="word-cloud-output">
+            <p class="placeholder-text">Enter text and click 'Generate' to see your word cloud!</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
