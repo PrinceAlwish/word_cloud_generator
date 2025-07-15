@@ -17,8 +17,10 @@
       background: white;
       box-shadow: 0 8px 24px rgba(0,0,0,0.1);
       border-radius: 12px;
-      width: 800px;
+      width: 1100px;
       padding: 20px 30px;
+      display: flex;
+      gap: 30px;
     }
 
     h1 {
@@ -67,12 +69,40 @@
       background: #0056b3;
     }
 
-    canvas {
+    #wordCloudCanvas {
       width: 100%;
       height: 500px;
       border: 1px solid #eee;
       margin-top: 20px;
       border-radius: 8px;
+      background: #fff;
+      cursor: grab;
+    }
+
+    .editor-controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .palette {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .palette span {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      display: inline-block;
+      cursor: pointer;
+    }
+    .palette span.selected {
+      border: 2px solid #007bff;
     }
 
     .download-buttons {
@@ -80,6 +110,65 @@
       display: flex;
       justify-content: center;
       gap: 10px;
+    }
+
+    .side-panel {
+      width: 260px;
+      min-width: 220px;
+      margin-left: 20px;
+      background: #f4f6fb;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 18px 16px 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      font-size: 15px;
+    }
+    .side-panel h2 {
+      font-size: 18px;
+      margin: 0 0 10px 0;
+      color: #0077cc;
+      text-align: left;
+    }
+    .top-words-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .top-words-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px solid #eaeaea;
+      font-size: 16px;
+    }
+    .top-words-list li:last-child {
+      border-bottom: none;
+    }
+    .stopwords-box {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 15px;
+      margin-bottom: 5px;
+      resize: vertical;
+    }
+    .color-ramp {
+      display: flex;
+      gap: 0;
+      height: 22px;
+      margin-top: 2px;
+      margin-bottom: 8px;
+    }
+    .color-ramp span {
+      flex: 1;
+      border-radius: 0;
+      border: none;
+      height: 100%;
+      cursor: pointer;
     }
 
     .download-buttons button {
@@ -93,30 +182,87 @@
 </head>
 <body>
   <div class="clipdown-container">
-    <h1>📋 Word Cloud Generator</h1>
-    
-    <textarea id="inputText" placeholder="Paste your text here..."></textarea>
+    <div style="flex:1;min-width:400px;">
+      <h1>📋 Word Cloud Generator</h1>
+      <textarea id="inputText" placeholder="Paste your text here..."></textarea>
 
-    <div class="controls">
-      <div>
-        <label for="colorPicker">Color:</label>
-        <input type="color" id="colorPicker" value="#0077cc">
+      <div class="controls">
+        <div>
+          <label for="colorPicker">Main Color:</label>
+          <input type="color" id="colorPicker" value="#0077cc">
+        </div>
+        <div>
+          <label for="bgPicker">Background:</label>
+          <input type="color" id="bgPicker" value="#ffffff">
+        </div>
+        <div>
+          <label for="fontFamily">Font:</label>
+          <select id="fontFamily">
+            <option value="Segoe UI">Segoe UI</option>
+            <option value="Arial">Arial</option>
+            <option value="Impact">Impact</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Comic Sans MS">Comic Sans MS</option>
+          </select>
+        </div>
+        <div>
+          <label for="minFont">Min Size:</label>
+          <input type="range" id="minFont" min="8" max="40" value="16" style="width:60px;">
+          <span id="minFontVal">16</span>px
+        </div>
+        <div>
+          <label for="maxFont">Max Size:</label>
+          <input type="range" id="maxFont" min="30" max="120" value="60" style="width:60px;">
+          <span id="maxFontVal">60</span>px
+        </div>
+        <div>
+          <label for="rotationMode">Rotation:</label>
+          <select id="rotationMode">
+            <option value="none">None</option>
+            <option value="horizontal">Horizontal/Vertical</option>
+            <option value="angled">Angled</option>
+            <option value="random">Random</option>
+          </select>
+        </div>
+        <div>
+          <label><input type="checkbox" id="outlineToggle"> Outline</label>
+        </div>
+        <div>
+          <label>Color Ramp:</label>
+          <div class="color-ramp" id="colorRamp"></div>
+        </div>
+        <div>
+          <button onclick="generateWordCloud()">Generate Word Cloud</button>
+        </div>
       </div>
-      <div>
-        <label for="bgPicker">Background:</label>
-        <input type="color" id="bgPicker" value="#ffffff">
-      </div>
-      <div>
-        <button onclick="generateWordCloud()">Generate Word Cloud</button>
+
+      <canvas id="wordCloudCanvas" width="800" height="500"></canvas>
+
+      <div class="download-buttons">
+        <button onclick="downloadImage('png')">Download PNG</button>
+        <button onclick="downloadImage('jpeg')">Download JPEG</button>
+        <button onclick="downloadSVG()">Download SVG</button>
       </div>
     </div>
-
-    <canvas id="wordCloudCanvas" width="800" height="500"></canvas>
-
-    <div class="download-buttons">
-      <button onclick="downloadImage('png')">Download PNG</button>
-      <button onclick="downloadImage('jpeg')">Download JPEG</button>
-      <button onclick="downloadSVG()">Download SVG</button>
+    <div class="side-panel">
+      <div>
+        <h2>Top 10 Words</h2>
+        <ul class="top-words-list" id="topWordsList"></ul>
+      </div>
+      <div>
+        <h2>Stop Words</h2>
+        <textarea class="stopwords-box" id="stopWordsBox" placeholder="e.g. the, and, of, to, a, in, is, it, you, that"></textarea>
+        <small>Comma or space separated. These words will be filtered out.</small>
+      </div>
+      <div>
+        <h2>Tips</h2>
+        <ul style="font-size:14px;line-height:1.5;margin:0 0 0 10px;padding:0;">
+          <li>Use <b>Color Ramp</b> for beautiful gradients.</li>
+          <li>Try different <b>Rotation</b> styles for variety.</li>
+          <li>Filter out common words using <b>Stop Words</b>.</li>
+          <li>Download your word cloud as PNG, JPEG, or SVG.</li>
+        </ul>
+      </div>
     </div>
   </div>
 
@@ -124,35 +270,166 @@
   <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
 
   <script>
+    // --- Color Ramp ---
+    const colorRamps = [
+      ['#0077cc', '#e83e8c', '#28a745', '#fd7e14', '#6f42c1'],
+      ['#ffb347', '#ffcc33', '#f7b731', '#f1c40f', '#f9ca24'],
+      ['#00c6ff', '#0072ff', '#005bea', '#2e86de', '#48dbfb'],
+      ['#ff6a00', '#ee0979', '#ff5858', '#ffb199', '#ff6a00'],
+      ['#43cea2', '#185a9d', '#2af598', '#009efd', '#43cea2'],
+      ['#343a40', '#6c757d', '#adb5bd', '#dee2e6', '#f8f9fa']
+    ];
+    let selectedRamp = 0;
+    let paletteColors = colorRamps[selectedRamp];
+    const colorRampDiv = document.getElementById('colorRamp');
+    function renderColorRamp() {
+      colorRampDiv.innerHTML = '';
+      colorRamps.forEach((ramp, idx) => {
+        const rampDiv = document.createElement('div');
+        rampDiv.style.display = 'flex';
+        rampDiv.style.cursor = 'pointer';
+        rampDiv.style.border = idx === selectedRamp ? '2px solid #0077cc' : '2px solid transparent';
+        rampDiv.style.borderRadius = '4px';
+        rampDiv.style.marginRight = '4px';
+        rampDiv.onclick = () => {
+          selectedRamp = idx;
+          paletteColors = colorRamps[selectedRamp];
+          renderColorRamp();
+        };
+        ramp.forEach(color => {
+          const span = document.createElement('span');
+          span.style.background = color;
+          rampDiv.appendChild(span);
+        });
+        colorRampDiv.appendChild(rampDiv);
+      });
+    }
+    renderColorRamp();
+
+    // --- Range value display ---
+    document.getElementById('minFont').oninput = function() {
+      document.getElementById('minFontVal').textContent = this.value;
+    };
+    document.getElementById('maxFont').oninput = function() {
+      document.getElementById('maxFontVal').textContent = this.value;
+    };
+
+    // --- Word Cloud Generation ---
+    let lastWordCloudList = [];
+    let lastWordCloudOptions = {};
+
+    function getStopWords() {
+      const stopWordsRaw = document.getElementById('stopWordsBox').value;
+      return stopWordsRaw.split(/[,\s]+/).map(w => w.trim().toLowerCase()).filter(Boolean);
+    }
+
+    function getRotationOptions(mode) {
+      // Returns [rotationSteps, rotateRatio, rotationFunc]
+      if (mode === 'none') return [1, 0, () => 0];
+      if (mode === 'horizontal') return [2, 0.5, (word, idx) => (idx % 2 === 0 ? 0 : Math.PI/2)];
+      if (mode === 'angled') return [4, 1, (word, idx) => (Math.PI/6) * (idx % 4 - 2)];
+      if (mode === 'random') return [6, 1, () => (Math.random() - 0.5) * Math.PI];
+      return [4, 0.5, () => 0];
+    }
+
     function generateWordCloud() {
       const text = document.getElementById('inputText').value;
-      const words = text.toLowerCase().match(/\b\w+\b/g);
+      let words = text.toLowerCase().match(/\b\w+\b/g);
       const color = document.getElementById('colorPicker').value;
       const bgColor = document.getElementById('bgPicker').value;
+      const fontFamily = document.getElementById('fontFamily').value;
+      const minFont = parseInt(document.getElementById('minFont').value);
+      const maxFont = parseInt(document.getElementById('maxFont').value);
+      const outline = document.getElementById('outlineToggle').checked;
+      const rotationMode = document.getElementById('rotationMode').value;
+      const [rotationSteps, rotateRatio, rotationFunc] = getRotationOptions(rotationMode);
+      const stopWords = getStopWords();
 
       if (!words) {
         alert("Please enter some text.");
         return;
+      }
+      if (stopWords.length) {
+        words = words.filter(w => !stopWords.includes(w));
       }
 
       const frequency = {};
       words.forEach(word => {
         frequency[word] = (frequency[word] || 0) + 1;
       });
-
       const list = Object.entries(frequency).sort((a, b) => b[1] - a[1]);
+      lastWordCloudList = list;
+      // Top 10 words
+      updateTopWordsList(list);
 
-      WordCloud(document.getElementById('wordCloudCanvas'), {
+      // Color ramp function
+      function colorRampFunc(word, weight, fontSize, distance, theta, idx) {
+        if (paletteColors.length > 1) {
+          // Map by frequency rank
+          const rank = list.findIndex(([w]) => w === word);
+          const colorIdx = Math.floor((rank / Math.max(1, list.length-1)) * (paletteColors.length-1));
+          return paletteColors[colorIdx];
+        }
+        return color;
+      }
+
+      lastWordCloudOptions = {
         list: list,
         gridSize: Math.round(16 * window.innerWidth / 1024),
-        weightFactor: 10,
-        fontFamily: 'Times, serif',
-        color: () => color,
-        rotateRatio: 0.5,
-        backgroundColor: bgColor
+        weightFactor: function(size) {
+          // Map frequency to font size
+          if (list.length === 0) return minFont;
+          const minFreq = list[list.length-1][1];
+          const maxFreq = list[0][1];
+          if (maxFreq === minFreq) return (minFont+maxFont)/2;
+          return minFont + (size-minFreq)*(maxFont-minFont)/(maxFreq-minFreq);
+        },
+        fontFamily: fontFamily,
+        color: colorRampFunc,
+        rotateRatio: rotateRatio,
+        rotationSteps: rotationSteps,
+        backgroundColor: bgColor,
+        drawOutOfBound: false,
+        origin: [400, 250],
+        drawMask: false,
+        hover: window.innerWidth > 600,
+        click: function(item, dimension, event) {},
+        rotate: function(word, weight, fontSize, distance, theta, idx) {
+          return rotationFunc(word, idx);
+        },
+        draw: function drawWordCloudItem(ctx, info, ...args) {
+          // Custom draw for outline/shadow
+          ctx.save();
+          ctx.font = info.weight + 'px ' + info.font;
+          ctx.translate(info.x, info.y);
+          ctx.rotate(info.rotate);
+          if (outline) {
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#222';
+            ctx.strokeText(info.text, 0, 0);
+          } else {
+            ctx.shadowColor = '#222';
+            ctx.shadowBlur = 4;
+          }
+          ctx.fillStyle = typeof info.fill === 'function' ? info.fill() : info.fill;
+          ctx.fillText(info.text, 0, 0);
+          ctx.restore();
+        }
+      };
+      WordCloud(document.getElementById('wordCloudCanvas'), lastWordCloudOptions);
+    }
+
+    function updateTopWordsList(list) {
+      const ul = document.getElementById('topWordsList');
+      ul.innerHTML = '';
+      list.slice(0, 10).forEach(([word, freq], idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${idx+1}. <b>${word}</b></span> <span style="color:#0077cc;font-weight:bold;">${freq}</span>`;
+        ul.appendChild(li);
       });
     }
 
+    // --- Download Functions ---
     function downloadImage(type) {
       const canvas = document.getElementById('wordCloudCanvas');
       const link = document.createElement('a');
@@ -163,16 +440,19 @@
 
     function downloadSVG() {
       const canvas = document.getElementById('wordCloudCanvas');
-      const ctx = canvas.getContext('2d');
-      const svgData = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-          <foreignObject width="100%" height="100%">
-            <canvas xmlns="http://www.w3.org/1999/xhtml">
-              ${canvas.toDataURL('image/png')}
-            </canvas>
-          </foreignObject>
-        </svg>
-      `;
+      // Export as SVG using wordcloud2.js data
+      let svgData = `<svg xmlns='http://www.w3.org/2000/svg' width='${canvas.width}' height='${canvas.height}'>`;
+      let words = (typeof WordCloud.getWords === 'function' ? WordCloud.getWords(canvas) : []);
+      for (const w of words) {
+        svgData += `<text x='${w.x}' y='${w.y}' font-family='${w.font}' font-size='${w.weight}' fill='${w.fill}'`;
+        if (w.rotate) svgData += ` transform='rotate(${w.rotate*180/Math.PI} ${w.x} ${w.y})'`;
+        svgData += ` text-anchor='middle' alignment-baseline='middle'`;
+        if (document.getElementById('outlineToggle').checked) {
+          svgData += ` stroke='#222' stroke-width='2'`;
+        }
+        svgData += `>${w.text}</text>`;
+      }
+      svgData += '</svg>';
       const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -180,5 +460,8 @@
       link.click();
     }
   </script>
+  <footer>
+        <p>View our <a href="infographic.html">infographic</a> for more information.</p>
+    </footer>
 </body>
 </html>
