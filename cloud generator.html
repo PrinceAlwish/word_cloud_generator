@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Cloud Generator</title>
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px;
+    }
+
+    .clipdown-container {
+      background: white;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      width: 800px;
+      padding: 20px 30px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-bottom: 15px;
+      padding: 10px;
+      font-size: 16px;
+      resize: vertical;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .controls > * {
+      margin: 5px 0;
+    }
+
+    select, input[type="color"], button {
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    canvas {
+      width: 100%;
+      height: 500px;
+      border: 1px solid #eee;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+
+    .download-buttons {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .download-buttons button {
+      background: #28a745;
+    }
+
+    .download-buttons button:hover {
+      background: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="clipdown-container">
+    <h1>📋 Word Cloud Generator</h1>
+    
+    <textarea id="inputText" placeholder="Paste your text here..."></textarea>
+
+    <div class="controls">
+      <div>
+        <label for="colorPicker">Color:</label>
+        <input type="color" id="colorPicker" value="#0077cc">
+      </div>
+      <div>
+        <label for="bgPicker">Background:</label>
+        <input type="color" id="bgPicker" value="#ffffff">
+      </div>
+      <div>
+        <button onclick="generateWordCloud()">Generate Word Cloud</button>
+      </div>
+    </div>
+
+    <canvas id="wordCloudCanvas" width="800" height="500"></canvas>
+
+    <div class="download-buttons">
+      <button onclick="downloadImage('png')">Download PNG</button>
+      <button onclick="downloadImage('jpeg')">Download JPEG</button>
+      <button onclick="downloadSVG()">Download SVG</button>
+    </div>
+  </div>
+
+  <!-- wordcloud2.js -->
+  <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+
+  <script>
+    function generateWordCloud() {
+      const text = document.getElementById('inputText').value;
+      const words = text.toLowerCase().match(/\b\w+\b/g);
+      const color = document.getElementById('colorPicker').value;
+      const bgColor = document.getElementById('bgPicker').value;
+
+      if (!words) {
+        alert("Please enter some text.");
+        return;
+      }
+
+      const frequency = {};
+      words.forEach(word => {
+        frequency[word] = (frequency[word] || 0) + 1;
+      });
+
+      const list = Object.entries(frequency).sort((a, b) => b[1] - a[1]);
+
+      WordCloud(document.getElementById('wordCloudCanvas'), {
+        list: list,
+        gridSize: Math.round(16 * window.innerWidth / 1024),
+        weightFactor: 10,
+        fontFamily: 'Times, serif',
+        color: () => color,
+        rotateRatio: 0.5,
+        backgroundColor: bgColor
+      });
+    }
+
+    function downloadImage(type) {
+      const canvas = document.getElementById('wordCloudCanvas');
+      const link = document.createElement('a');
+      link.download = `wordcloud.${type}`;
+      link.href = canvas.toDataURL(`image/${type}`);
+      link.click();
+    }
+
+    function downloadSVG() {
+      const canvas = document.getElementById('wordCloudCanvas');
+      const ctx = canvas.getContext('2d');
+      const svgData = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+          <foreignObject width="100%" height="100%">
+            <canvas xmlns="http://www.w3.org/1999/xhtml">
+              ${canvas.toDataURL('image/png')}
+            </canvas>
+          </foreignObject>
+        </svg>
+      `;
+      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "wordcloud.svg";
+      link.click();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Word Cloud Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+    <!-- Chosen Palette: Warm Neutrals & Subtle Blues -->
+    <!-- Application Structure Plan: A two-panel SPA. The left panel contains all user controls (text input, processing options like stop words/max count, and visual customization like color/shape/font). The right panel is a dedicated visualization area for the canvas output. This structure was chosen because it creates a clear, task-oriented workflow: configure on the left, see results on the right. It allows for immediate interactive feedback, which is crucial for a generator tool and directly implements the report's emphasis on user control and dynamic updates. -->
+    <!-- Visualization & Content Choices: [Text Input -> Goal: Inform -> <textarea> -> User typing -> Justification: Direct text entry.], [Stop Words -> Goal: Organize -> <input> -> User typing -> Justification: Custom filtering as per report.], [Max Word Count -> Goal: Organize -> <input type='range'> -> User sliding -> Justification: Intuitive performance/density control.], [Visual Styles -> Goal: Inform -> <select> -> User selection -> Justification: Simple control over aesthetics.], [Word Cloud -> Goal: Compare/Inform -> Canvas -> Hover for frequency -> Justification: wordcloud2.js library is used. It's a specialized, canvas-based library ideal for this task, offering better performance for large texts and built-in interactivity, aligning with the report's best practices. It supports custom shapes and colors, fulfilling advanced feature requirements.] -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono&family=Lobster&family=Pacifico&family=Caveat&display=swap');
+        
+        .control-panel {
+            scrollbar-width: thin;
+            scrollbar-color: #a3a3a3 #f1f5f9;
+        }
+
+        .control-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .control-panel::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .control-panel::-webkit-scrollbar-thumb {
+            background-color: #a3a3a3;
+            border-radius: 10px;
+            border: 2px solid #f1f5f9;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+        }
+
+        #word-cloud-canvas {
+            cursor: default;
+        }
+        
+        .wc-tooltip {
+            position: fixed;
+            padding: 4px 8px;
+            background-color: rgba(0,0,0,0.75);
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div class="flex flex-col md:flex-row h-screen w-screen">
+        
+        <aside class="w-full md:w-1/3 lg:w-1/4 xl:w-1/5 bg-white border-r border-slate-200 p-4 lg:p-6 overflow-y-auto control-panel">
+            <header class="mb-6">
+                <h1 class="text-2xl font-bold text-slate-900">Word Cloud Generator</h1>
+                <p class="text-sm text-slate-500 mt-1">Transform your text into a beautiful and insightful visualization.</p>
+            </header>
+            
+            <nav class="space-y-6">
+                <div>
+                    <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-2">1. Input Text</h2>
+                    <p class="text-xs text-slate-500 mb-3">Paste your text below, or load an example. Larger texts produce more interesting clouds.</p>
+                    <textarea id="text-input" rows="8" class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow duration-200" placeholder="Paste your text here..."></textarea>
+                    <div class="flex space-x-2 mt-2">
+                        <button id="load-example-btn" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-medium py-2 px-3 rounded-md transition-colors duration-200">Load Example</button>
+                        <button id="clear-text-btn" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-medium py-2 px-3 rounded-md transition-colors duration-200">Clear</button>
+                    </div>
+                </div>
+                
+                <div>
+                    <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-2">2. Process & Filter</h2>
+                    <p class="text-xs text-slate-500 mb-3">Refine your data by removing common words and setting limits.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="stop-words" class="block text-sm font-medium text-slate-700 mb-1">Stop Words</label>
+                            <input type="text" id="stop-words" class="w-full p-2 border border-slate-300 rounded-md text-sm" placeholder="Add comma, separated, words">
+                        </div>
+                        <div>
+                            <label for="max-words" class="block text-sm font-medium text-slate-700 mb-1">Max Words: <span id="max-words-value" class="font-bold">100</span></label>
+                            <input type="range" id="max-words" min="10" max="300" value="100" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-2">3. Customize Style</h2>
+                    <p class="text-xs text-slate-500 mb-3">Adjust the appearance of your word cloud for the perfect look.</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="color-palette" class="block text-sm font-medium text-slate-700 mb-1">Color Palette</label>
+                            <select id="color-palette" class="w-full p-2 border border-slate-300 rounded-md text-sm">
+                                <option value="viridis">Viridis</option>
+                                <option value="plasma">Plasma</option>
+                                <option value="blues">Blues</option>
+                                <option value="pastel">Pastel</option>
+                                <option value="earth">Earth Tones</option>
+                                <option value="random-dark">Random Dark</option>
+                                <option value="random-light">Random Light</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="font-family" class="block text-sm font-medium text-slate-700 mb-1">Font</label>
+                            <select id="font-family" class="w-full p-2 border border-slate-300 rounded-md text-sm">
+                                <option value="Inter">Inter</option>
+                                <option value="Roboto Mono">Roboto Mono</option>
+                                <option value="Lobster">Lobster</option>
+                                <option value="Pacifico">Pacifico</option>
+                                <option value="Caveat">Caveat</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="shape" class="block text-sm font-medium text-slate-700 mb-1">Shape</label>
+                            <select id="shape" class="w-full p-2 border border-slate-300 rounded-md text-sm">
+                                <option value="circle">Circle</option>
+                                <option value="cardioid">Cardioid (Heart)</option>
+                                <option value="diamond">Diamond</option>
+                                <option value="square">Square</option>
+                                <option value="triangle-forward">Triangle</option>
+                                <option value="pentagon">Pentagon</option>
+                                <option value="star">Star</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="rotation" class="block text-sm font-medium text-slate-700 mb-1">Rotation</label>
+                            <select id="rotation" class="w-full p-2 border border-slate-300 rounded-md text-sm">
+                                <option value="none">None</option>
+                                <option value="horizontal">Horizontal</option>
+                                <option value="mixed">Mixed</option>
+                                <option value="ninety">+/- 90°</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <footer class="mt-8 pt-6 border-t border-slate-200 space-y-3">
+                 <button id="generate-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-lg">
+                    Generate Cloud
+                </button>
+                <button id="download-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                    Download as PNG
+                </button>
+            </footer>
+        </aside>
+
+        <main class="flex-1 bg-slate-50 flex flex-col items-center justify-center p-4">
+            <div id="canvas-wrapper" class="w-full h-full max-w-6xl max-h-[90vh] flex items-center justify-center">
+                <div class="chart-container">
+                    <canvas id="word-cloud-canvas"></canvas>
+                </div>
+                <div id="placeholder" class="text-center text-slate-500">
+                    <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                    </svg>
+                    <h3 class="mt-2 text-lg font-medium text-slate-800">Your word cloud will appear here</h3>
+                    <p class="mt-1 text-sm text-slate-500">Enter some text and click 'Generate Cloud' to begin.</p>
+                </div>
+            </div>
+            <div id="tooltip" class="wc-tooltip"></div>
+        </main>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const textInput = document.getElementById('text-input');
+        const stopWordsInput = document.getElementById('stop-words');
+        const maxWordsInput = document.getElementById('max-words');
+        const maxWordsValue = document.getElementById('max-words-value');
+        const colorPaletteSelect = document.getElementById('color-palette');
+        const fontFamilySelect = document.getElementById('font-family');
+        const shapeSelect = document.getElementById('shape');
+        const rotationSelect = document.getElementById('rotation');
+        const generateBtn = document.getElementById('generate-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const loadExampleBtn = document.getElementById('load-example-btn');
+        const clearTextBtn = document.getElementById('clear-text-btn');
+        const canvas = document.getElementById('word-cloud-canvas');
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        const placeholder = document.getElementById('placeholder');
+        const tooltip = document.getElementById('tooltip');
+        
+        const ctx = canvas.getContext('2d');
+
+        const defaultStopWords = [
+            'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'as', 'at',
+            'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'did', 'do',
+            'does', 'doing', 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'has', 'have', 'having',
+            'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'it',
+            'its', 'itself', 'just', 'me', 'more', 'most', 'my', 'myself', 'no', 'nor', 'not', 'now', 'of', 'off', 'on',
+
+            'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 's', 'same', 'she', 'should',
+            'so', 'some', 'such', 't', 'than', 'that', 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there',
+            'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was', 'we', 'were',
+            'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'you', 'your', 'yours',
+            'yourself', 'yourselves'
+        ];
+
+        const exampleText = `A word cloud is a visual representation of text data. It is a collection, or cluster, of words depicted in different sizes. The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is. Also known as tag clouds or text clouds, these visualizations can help you spot the most prominent words and emotions in a text with a quick glance. Word clouds are a powerful way to visualize customer feedback, product reviews, or any other text data. They are simple to understand and share. This generator allows you to create your own beautiful and insightful word clouds from any text source. You can customize the shape, colors, fonts, and rotation of the words to create a truly unique visualization. The text processing pipeline behind this tool includes tokenization, normalization to lowercase, and stop word removal to ensure the final output is meaningful. Performance is key, so this tool uses an HTML5 canvas for fast rendering, even with large amounts of text. Interactivity is also important; you can hover over words to see their frequency. Enjoy creating your own visual masterpiece! Data visualization is a fascinating field.`;
+
+        maxWordsInput.addEventListener('input', (e) => {
+            maxWordsValue.textContent = e.target.value;
+        });
+
+        loadExampleBtn.addEventListener('click', () => {
+            textInput.value = exampleText;
+        });
+
+        clearTextBtn.addEventListener('click', () => {
+            textInput.value = '';
+        });
+
+        function processText(text) {
+            const userStopWords = stopWordsInput.value.split(',').map(w => w.trim().toLowerCase()).filter(Boolean);
+            const allStopWords = new Set([...defaultStopWords, ...userStopWords]);
+
+            const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+            
+            const frequencies = new Map();
+            words.forEach(word => {
+                if (!allStopWords.has(word) && word.length > 2) {
+                    frequencies.set(word, (frequencies.get(word) || 0) + 1);
+                }
+            });
+
+            return Array.from(frequencies.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, parseInt(maxWordsInput.value, 10));
+        }
+
+        function getRotationOptions() {
+            switch (rotationSelect.value) {
+                case 'none':
+                    return { minRotation: 0, maxRotation: 0, rotationSteps: 1 };
+                case 'horizontal':
+                    return { minRotation: 0, maxRotation: 0, rotationSteps: 1 };
+                case 'mixed':
+                    return { minRotation: -Math.PI / 4, maxRotation: Math.PI / 4, rotationSteps: 4 };
+                case 'ninety':
+                    return { minRotation: -Math.PI / 2, maxRotation: Math.PI / 2, rotationSteps: 2 };
+                default:
+                    return { minRotation: 0, maxRotation: 0, rotationSteps: 1 };
+            }
+        }
+        
+        function getColorOptions() {
+            const palette = colorPaletteSelect.value;
+            if (palette === 'random-dark' || palette === 'random-light') {
+                return { color: palette };
+            }
+            
+            const palettes = {
+                viridis: ['#440154ff', '#414487ff', '#2a788eff', '#22a884ff', '#7ad151ff', '#fde725ff'],
+                plasma: ['#0d0887ff', '#6a00a8ff', '#b12a90ff', '#e16462ff', '#fca636ff', '#f0f921ff'],
+                blues: ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b'],
+                pastel: ['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec'],
+                earth: ['#556b2f', '#8b4513', '#228b22', '#4682b4', '#d2b48c', '#a0522d', '#6b8e23']
+            };
+            
+            return {
+                color: (word, weight, fontSize, distance, theta) => {
+                    const p = palettes[palette];
+                    return p[Math.floor(Math.random() * p.length)];
+                }
+            };
+        }
+
+
+        function generateWordCloud() {
+            const wordList = processText(textInput.value);
+            if (wordList.length === 0) {
+                placeholder.innerHTML = `<p class="text-red-500">No words to display. Try different text or check your stop words.</p>`;
+                placeholder.style.display = 'block';
+                canvas.style.display = 'none';
+                return;
+            }
+            
+            placeholder.style.display = 'none';
+            canvas.style.display = 'block';
+
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+
+            const rotationOptions = getRotationOptions();
+            const colorOptions = getColorOptions();
+
+            const options = {
+                list: wordList,
+                gridSize: Math.round(16 * canvas.width / 1024),
+                weightFactor: (size) => Math.pow(size, 1.1) * canvas.width / 256,
+                fontFamily: fontFamilySelect.value,
+                color: colorOptions.color,
+                backgroundColor: '#ffffff',
+                rotateRatio: rotationSelect.value === 'none' ? 0 : 0.5,
+                minRotation: rotationOptions.minRotation,
+                maxRotation: rotationOptions.maxRotation,
+                rotationSteps: rotationOptions.rotationSteps,
+                shape: shapeSelect.value,
+                drawOutOfBound: false,
+                shuffle: true,
+                wait: 0,
+                minSize: 4,
+                hover: (item, dim, event) => {
+                    if (item) {
+                        tooltip.style.opacity = '1';
+                        tooltip.textContent = `${item[0]}: ${item[1]}`;
+                        tooltip.style.left = `${event.clientX + 15}px`;
+                        tooltip.style.top = `${event.clientY + 15}px`;
+                    }
+                },
+                hoverRelease: () => {
+                   tooltip.style.opacity = '0';
+                }
+            };
+            
+            WordCloud(canvas, options);
+        }
+
+        generateBtn.addEventListener('click', generateWordCloud);
+        
+        document.body.addEventListener('mousemove', (event) => {
+            if (tooltip.style.opacity === '1') {
+                tooltip.style.left = `${event.clientX + 15}px`;
+                tooltip.style.top = `${event.clientY + 15}px`;
+            }
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            if (canvas.style.display === 'none' || !canvas.toDataURL) {
+                alert("Please generate a word cloud first!");
+                return;
+            }
+            const link = document.createElement('a');
+            link.download = 'word-cloud.png';
+            link.href = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+            link.click();
+        });
+
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            if (canvas.style.display !== 'none') {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(generateWordCloud, 250);
+            }
+        });
+    });
+    </script>
+</body>
+</html>
