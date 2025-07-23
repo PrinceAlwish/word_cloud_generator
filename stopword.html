@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stop Words Explorer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .category {
+      background: #ffffff;
+      border-radius: 8px;
+      margin: 1rem auto;
+      padding: 1rem 1.5rem;
+      max-width: 800px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .category:hover {
+      background: #eef2f5;
+    }
+
+    .category h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #1a73e8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .category ul {
+      margin-top: 0.75rem;
+      padding-left: 1.5rem;
+      display: none;
+    }
+
+    .category ul li {
+      line-height: 1.6;
+    }
+
+    .active ul {
+      display: block;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #e0ecf8;
+      color: #2c3e50;
+      padding: 0.25rem 0.6rem;
+      margin: 0.25rem;
+      border-radius: 5px;
+      font-size: 0.95rem;
+    }
+
+    .phrase {
+      display: block;
+      background: #fbeec1;
+      color: #6d4c41;
+      padding: 0.5rem;
+      margin: 0.25rem 0;
+      border-left: 5px solid #f4c542;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>✅ Stop Words Explorer</h1>
+
+  <div class="category">
+    <h2>Pronouns & Personal References <span>+</span></h2>
+    <ul>
+      <li><span class="tag">I</span><span class="tag">you</span><span class="tag">me</span><span class="tag">my</span><span class="tag">your</span><span class="tag">he</span><span class="tag">she</span><span class="tag">we</span><span class="tag">they</span><span class="tag">it</span></li>
+    </ul>
+  </div>
+
+  <div class="category">
+    <h2>Articles & Determiners <span>+</span></h2>
+    <ul>
+      <li><span class="tag">a</span><span class="tag">an</span><span class="tag">the</span><span class="tag">this</span><span class="tag">that</span><span class="tag">those</span><span class="tag">these</span></li>
+    </ul>
+  </div>
+
+  <div class="category">
+    <h2>Prepositions <span>+</span></h2>
+    <ul>
+      <li><span class="tag">with</span><span class="tag">in</span><span class="tag">on</span><span class="tag">at</span><span class="tag">of</span><span class="tag">for</span><span class="tag">to</span><span class="tag">by</span><span class="tag">as</span><span class="tag">from</span><span class="tag">about</span><span class="tag">out</span><span class="tag">into</span></li>
+    </ul>
+  </div>
+
+  <div class="category">
+    <h2>Conjunctions & Linking Words <span>+</span></h2>
+    <ul>
+      <li><span class="tag">and</span><span class="tag">but</span><span class="tag">or</span><span class="tag">so</span><span class="tag">because</span><span class="tag">if</span><span class="tag">though</span><span class="tag">despite</span><span class="tag">just</span></li>
+    </ul>
+  </div>
+
+  <div class="category">
+    <h2>Auxiliary & Modal Verbs <span>+</span></h2>
+    <ul>
+      <li><span class="tag">am</span><span class="tag">is</span><span class="tag">are</span><span class="tag">was</span><span class="tag">were</span><span class="tag">be</span><span class="tag">been</span><span class="tag">being</span>
+      <span class="tag">have</span><span class="tag">has</span><span class="tag">had</span><span class="tag">do</span><span class="tag">does</span><span class="tag">did</span>
+      <span class="tag">can</span><span class="tag">could</span><span class="tag">will</span><span class="tag">would</span><span class="tag">may</span><span class="tag">might</span><span class="tag">must</span><span class="tag">shall</span><span class="tag">should</span></li>
+    </ul>
+  </div>
+
+  <div class="category">
+    <h2>Common Adverbs & Fillers <span>+</span></h2>
+    <ul>
+      <li><span class="tag">well</span><span class="tag">very</span><span class="tag">too</span><span class="tag">also</span><span class="tag">now</span><span class="tag">then</span>
+      <span class="tag">really</span><span class="tag">literally</span><span class="tag">almost</span><span class="tag">much</span><span class="tag">bit</span><span class="tag">just</span><span class="tag">even</span><span class="tag">still</span></li>
+    </ul>
+  </div>
+
+  <div class="category">
+    <h2>General Expressions / Politeness Words <span>+</span></h2>
+    <ul>
+      <li><span class="tag">okay</span><span class="tag">ok</span><span class="tag">hope</span><span class="tag">great</span><span class="tag">love</span><span class="tag">amazing</span>
+      <span class="tag">sweet</span><span class="tag">thanks</span><span class="tag">thank</span><span class="tag">sorry</span><span class="tag">please</span></li>
+    </ul>
+  </div>
+
+  <div class="category">
+    <h2>Phrases that Can Be Ignored <span>+</span></h2>
+    <ul>
+      <li>
+        <div class="phrase">it's well</div>
+        <div class="phrase">may God's will be done</div>
+        <div class="phrase">have sweet dreams</div>
+        <div class="phrase">rest well</div>
+        <div class="phrase">it's been amazing</div>
+        <div class="phrase">I hope</div>
+        <div class="phrase">I think</div>
+        <div class="phrase">I felt</div>
+        <div class="phrase">I enjoyed</div>
+        <div class="phrase">I love</div>
+      </li>
+    </ul>
+  </div>
+
+  <script>
+    document.querySelectorAll('.category').forEach(cat => {
+      cat.addEventListener('click', () => {
+        cat.classList.toggle('active');
+        const symbol = cat.querySelector('span');
+        symbol.textContent = cat.classList.contains('active') ? '−' : '+';
+      });
+    });
+  </script>
+</body>
+</html>
